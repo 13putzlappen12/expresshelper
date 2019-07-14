@@ -1,0 +1,111 @@
+#!/bin/bash
+echo 'started script.';
+
+# Check connection status
+
+connected () {
+if [ "$STATE" == "Connected" ]; then
+  echo -e "\e[96malready connected."
+  echo -e "\e[96mwe dont need to connect,"
+  echo -e "\e[0mdo you want to reconnect? [Y/n]"
+  read yn
+  if [ "$yn" == "y" ]; then
+    echo "starting reconnect"
+    expressvpn disconnect
+    echo -e "\e[92mWaiting 7s for network.."
+    sleep 7
+    echo -e "\e[0mreconnecting..."
+    expressvpn connect
+    echo -e "\e[92mSuccessfully reconnected. Thanks for using my script."
+    IP=`curl -s http://whatismyip.akamai.com/`
+    echo -e "\e[0mnew ip adresss is: $IP"
+  else
+    if [ $yn == "n" ]; then
+      echo -e "\e[0mdo Disconnect now? [Y/n]"
+      read DCYN
+      if [ "$DCYN" == "Y" ]; then
+        expressvpn disconnect
+      else
+        echo -e "\e[0mThere is nothing to do"
+        exit
+      fi
+    fi
+    if [ "$yn" == "" ]; then
+      echo "starting reconnect"
+      expressvpn disconnect
+      echo -e "\e[92mWaiting 7s for network.."
+      sleep 7
+      echo -e "\e[0mreconnecting..."
+      expressvpn connect
+      echo -e "\e[92mSuccessfully reconnected. Thanks for using my script."
+      IP=`curl -s http://whatismyip.akamai.com/`
+      echo -e "\e[0mnew ip adresss is: $IP"
+    fi
+  fi
+  exit
+fi
+}
+
+# Section 2, if not connected
+notconnected () {
+  if [ "$STATE" == "Not Connected" ]; then
+    echo -e "\e[1:33mYoure not connected.\nDo you want to connect now?\e[0m"
+    read yn
+    if [ "$yn" == "y" ]; then
+      echo -e "\e[96mconnecting.."
+      expressvpn connect
+    elif [[ "$yn" == "n" ]]; then
+      #statements
+      echo -e '\e[1:33mThen, heres nothing else to do. Bye!\e[0m'
+      exit
+    else
+      echo -e "\e[31mERROR - Invalid input. Try again.."
+      echo -e "Press any key..\e[0m"
+      read -n 1
+      clear
+      notconnected
+  fi
+fi
+exit
+}
+# Installl expressvpn from arch/AUR
+installevpn () {
+	clear
+	echo "Installing expressvpn from arch/AUR"
+	pacman -Sy expressvpn
+}
+
+# Check f expressvpn is installed
+chkdep () {
+	clear
+	echo "checking dependencies.."
+	if ! [ -x "$(command -v expressvpn)" ]; then
+		echo -e "\e[31mCritical Error. Expressvpn not installed. Do you
+		want to install it now? [yes/no]"
+		read -n 1 "[yes/no]" $inst
+		if [ "$inst" == "yes" ]; then
+			exit
+		elif [ "$inst" == "no" ]; then
+			exit
+		fi
+	else
+		echo "expressvpn seems to been installed. Continuing script in 3s.."
+		sleep 3
+		chkconn
+	fi
+}
+
+chkconn () {
+	STATE=`expressvpn status | head -n 1 | awk '{print $1}'`
+
+	if [ "$STATE" == "[1;32;49mConnected" ]; then
+	  STATE="Connected"
+	  connected
+	else
+	  STATE="Not Connected"
+	  notconnected
+	fi
+
+	echo -e "actually your connection state is: $STATE\e[0m"
+}
+chkdep
