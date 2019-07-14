@@ -94,6 +94,7 @@ chkdep () {
 	fi
 }
 
+#startfunction
 chkconn () {
 	STATE=`expressvpn status | head -n 1 | awk '{print $1}'`
 
