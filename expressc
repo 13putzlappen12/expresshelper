@@ -1,7 +1,6 @@
 #!/bin/bash
-echo 'started script.';
+echo 'started script.'
 
-# Check connection status
 
 connected () {
 if [ "$STATE" == "Connected" ]; then
