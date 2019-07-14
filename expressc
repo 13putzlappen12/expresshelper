@@ -68,23 +68,28 @@ fi
 exit
 }
 # Installl expressvpn from arch/AUR
-installevpn () {
+install_evpn () {
 	clear
 	echo "Installing expressvpn from arch/AUR"
 	pacman -Sy expressvpn
 }
 
-# Check f expressvpn is installed
+# Check if expressvpn is installed
 chkdep () {
 	clear
 	echo "checking dependencies.."
 	if ! [ -x "$(command -v expressvpn)" ]; then
-		echo -e "\e[31mCritical Error. Expressvpn not installed. Do you
-		want to install it now? [yes/no]"
-		read -n 1 "[yes/no]" $inst
-		if [ "$inst" == "yes" ]; then
-			exit
-		elif [ "$inst" == "no" ]; then
+		echo -e "\e[31mCritical Error. Expressvpn not installed. Do you want to install it now? [yes/no]"
+		read -n 1 yes/no
+		if [ "yes/no" == "yes" ]; then
+      # Install for arch
+      sudo pacman -Syu
+      sudo pacman -S yay
+      yay -Syyuu
+      yay -S expressvpn
+			clear
+      chkdep
+		elif [ "yes/no" == "no" ]; then
 			exit
 		fi
 	else
