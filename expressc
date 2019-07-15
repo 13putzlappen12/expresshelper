@@ -99,6 +99,10 @@ chkdep () {
         echo "successfully installed expressvpn"
         echo "press any key to continue..."
         read -n 1
+      else
+        echo "cant continue without installing expressvpn."
+        exit
+      fi
 			clear
       chkdep
 		elif [ "yes/no" == "no" ]; then
