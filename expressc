@@ -1,6 +1,11 @@
-#!/bin/bash
-echo 'started script.'
+#!/usr/bin/env bash
 
+function print_error {
+    read line file <<<$(caller)
+    echo "An error occurred in line $line of file $file:" >&2
+    sed "${line}q;d" "$file" >&2
+}
+trap print_error ERR
 
 connected () {
 if [ "$STATE" == "Connected" ]; then
@@ -68,10 +73,26 @@ fi
 exit
 }
 # Installl expressvpn from arch/AUR
-install_evpn () {
-	clear
-	echo "Installing expressvpn from arch/AUR"
-	pacman -Sy expressvpn
+install_evpn_arch () {
+  clear
+  sudo pacman -Syu
+  sudo pacman -S yay
+  yay -Syyuu
+  yay -S expressvpn
+}
+
+install_evpn_ubuntu () {
+  sudo apt -y update
+  sudo apt -y upgrade
+#  cd ~/
+#  wget https://download.expressvpn.xyz/clients/linux/expressvpn_2.1.0-1_amd64.deb
+  sudo apt install --reinstall ./expressvpn.deb -y
+#  sudo rm -r ./expressvpn*.deb
+  echo -e "\e[92msuccessfully installed expressvpn"
+  echo -e "Please insert your activationcode from expressvpn\e[0m"
+  read -p "input:" code
+  export acode="$code"
+  echo $acode | expressvpn activate
 }
 
 # Check if expressvpn is installed
@@ -84,25 +105,9 @@ chkdep () {
 		if [ "$yn" == "yes" ]; then
       # Install for arch
       if [ -x "$(command -v pacman)" ]; then
-        sudo pacman -Syu
-        sudo pacman -S yay
-        yay -Syyuu
-        yay -S expressvpn
+        install_evpn_arch
       elif [[ -x "$(command -v apt)" ]]; then
-        # Install for Ubuntu
-        sudo apt -y update
-        sudo apt -y upgrade
-        cd ~/
-        wget https://download.expressvpn.xyz/clients/linux/expressvpn_2.1.0-1_amd64.deb
-        sudo apt-get install ./expressvpn*.deb -y
-        sudo rm -r ./expressvpn*.deb
-        echo -e "\e[92msuccessfully installed expressvpn"
-        echo -e "Please insert your activationcode from expressvpn\e[0m"
-        expressvpn activate
-        #expect "code:"
-        #send "$activationcode\r"
-        # echo "press any key to continue..."
-        # read -n 1
+        install_evpn_ubuntu
       else
         echo "cant continue without installing expressvpn."
         exit
@@ -113,8 +118,8 @@ chkdep () {
 			exit
 		fi
 	else
-		echo "expressvpn seems to been installed. Continuing script in 3s.."
-		sleep 3
+		echo "expressvpn seems to been installed. Continuing script in 2s.."
+		sleep 2
 		chkconn
 	fi
 }
