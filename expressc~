@@ -2,7 +2,7 @@
 source /home/tz/Schreibtisch/errorhandler.sh
 
 function print_error() {
-  read line file <<<"$(caller)"
+  read line file <<<$(caller)
   echo "An error occurred in line $line of file $file:" >&2
   sed "${line}q;d" "$file" >&2
 }
@@ -51,8 +51,6 @@ connected() {
   fi
 }
 
-echo -e
-
 # Section 2, if not connected
 notconnected() {
   if [ "$STATE" == "Not Connected" ]; then
@@ -61,7 +59,7 @@ notconnected() {
     if [ "$yn" == "y" ]; then
       echo -e "\e[96mconnecting.."
       expressvpn connect
-    elif [[ $yn == "n" ]]; then
+    elif [[ "$yn" == "n" ]]; then
       #statements
       echo -e '\e[1:33mThen, heres nothing else to do. Bye!\e[0m'
       exit
@@ -93,7 +91,7 @@ install_evpn_ubuntu() {
   #  sudo rm -r ./expressvpn*.deb
   echo -e "\e[92msuccessfully installed expressvpn"
   echo -e "Please insert your activationcode from expressvpn\e[0m"
-  #echo $acode | expressvpn activate
+  echo $acode | expressvpn activate
 }
 
 # Check if expressvpn is installed
@@ -115,7 +113,7 @@ chkdep() {
       fi
       clear
       chkdep
-    elif [ $'yes/no' = "no" ]; then
+    elif [ "yes/no" == "no" ]; then
       exit
     fi
   else
