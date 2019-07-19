@@ -1,19 +1,18 @@
 #!/usr/bin/env bash
-source /home/tz/Schreibtisch/errorhandler.sh
+set -e
 
 function print_error() {
-  read line file <<<"$(caller)"
+  read -r -r line file <<<"$(caller)"
   echo "An error occurred in line $line of file $file:" >&2
   sed "${line}q;d" "$file" >&2
 }
-trap print_error ERR
 
 connected() {
   if [ "$STATE" == "Connected" ]; then
     echo -e "\e[96malready connected."
     echo -e "\e[96mwe dont need to connect,"
     echo -e "\e[0mdo you want to reconnect? [Y/n]"
-    read yn
+    read -r yn
     if [ "$yn" == "y" ]; then
       echo "starting reconnect"
       expressvpn disconnect
@@ -25,9 +24,9 @@ connected() {
       IP=$(curl -s http://whatismyip.akamai.com/)
       echo -e "\e[0mnew ip adresss is: $IP"
     else
-      if [ $yn == "n" ]; then
+      if [ $"yn" == "n" ]; then
         echo -e "\e[0mdo Disconnect now? [Y/n]"
-        read DCYN
+        read -r DCYN
         if [ "$DCYN" == "Y" ]; then
           expressvpn disconnect
         else
@@ -57,7 +56,7 @@ echo -e
 notconnected() {
   if [ "$STATE" == "Not Connected" ]; then
     echo -e "\e[1:33mYoure not connected.\nDo you want to connect now?\e[0m"
-    read yn
+    read -r yn
     if [ "$yn" == "y" ]; then
       echo -e "\e[96mconnecting.."
       expressvpn connect
@@ -68,7 +67,7 @@ notconnected() {
     else
       echo -e "\e[31mERROR - Invalid input. Try again.."
       echo -e "Press any key..\e[0m"
-      read -n 1
+      read -r -n 1
       clear
       notconnected
     fi
@@ -85,15 +84,15 @@ install_evpn_arch() {
 }
 
 install_evpn_ubuntu() {
-  sudo apt -y update
-  sudo apt -y upgrade
+  sudo apt update
+  sudo apt upgrade
   #  cd ~/
   #  wget https://download.expressvpn.xyz/clients/linux/expressvpn_2.1.0-1_amd64.deb
   sudo apt install ./expressvpn.deb -y
   #  sudo rm -r ./expressvpn*.deb
   echo -e "\e[92msuccessfully installed expressvpn"
   echo -e "Please insert your activationcode from expressvpn\e[0m"
-  #echo $acode | expressvpn activate
+  expressvpn activate
 }
 
 # Check if expressvpn is installed
@@ -102,7 +101,7 @@ chkdep() {
   echo "checking dependencies.."
   if ! [ -x "$(command -v expressvpn)" ]; then
     echo -e "\e[31mCritical Error. Expressvpn not installed. Do you want to install it now? [yes/no]\e[0m"
-    read yn
+    read -r -n 3 yn
     if [ "$yn" == "yes" ]; then
       # Install for arch
       if [ -x "$(command -v pacman)" ]; then
@@ -115,7 +114,7 @@ chkdep() {
       fi
       clear
       chkdep
-    elif [ $'yes/no' = "no" ]; then
+    elif [ $"[yes/no]" = "no" ]; then
       exit
     fi
   else
@@ -125,7 +124,7 @@ chkdep() {
   fi
 }
 
-#startfunction
+# Check connection State
 chkconn() {
   STATE=$(expressvpn status | head -n 1 | awk '{print $1}')
 
@@ -139,4 +138,6 @@ chkconn() {
 
   echo -e "actually your connection state is: $STATE\e[0m"
 }
+
 chkdep
+trap print_error ERR
